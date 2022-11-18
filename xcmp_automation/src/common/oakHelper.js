@@ -1,6 +1,7 @@
 import { rpc } from '@imstar15/types';
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { u8aToHex } from "@polkadot/util";
+import { sendExtrinsic } from './util';
 
 const OAK_PARA_ID = 2114;
 
@@ -59,23 +60,8 @@ class OakHelper {
     return fees;
   }
 
-  sendXcmExtrinsic = async (xcmpCall, keyPair, taskId) => {
-    return new Promise(async (resolve) => {
-      const unsub = await xcmpCall.signAndSend(keyPair, { nonce: -1 }, async ({ status }) => {
-        if (status.isInBlock) {
-          console.log('Successful with hash ' + status.asInBlock.toHex());
-  
-          // Get Task
-          const task = await this.api.query.automationTime.accountTasks(keyPair.address, taskId);
-          console.log("Task:", task.toHuman());
-  
-          unsub();
-          resolve();
-        } else {
-          console.log('Status: ' + status.type);
-        }
-      });
-    });
+  sendXcmExtrinsic = async (xcmpCall, keyPair) => {
+    await sendExtrinsic(this.api, xcmpCall, keyPair);
   }
 };
 
